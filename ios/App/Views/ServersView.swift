@@ -98,6 +98,7 @@ struct ServersView: View {
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.text1)
                         .lineLimit(1)
+                        .truncationMode(.tail)
                     HStack(spacing: 6) {
                         Text(s.protocolShort)
                             .font(.system(size: 10, weight: .bold, design: .rounded))
@@ -109,6 +110,7 @@ struct ServersView: View {
                             .font(.system(size: 11, design: .rounded))
                             .foregroundStyle(Theme.text3)
                             .lineLimit(1)
+                            .truncationMode(.tail)
                     }
                 }
                 Spacer(minLength: 8)

@@ -30,9 +30,10 @@ struct AuroraBackground: View {
     var body: some View {
         ZStack {
             Theme.bg
-            blob(Theme.accent, size: 460, x: -140, y: -300, delay: 0)
-            blob(Theme.violet, size: 420, x: 150, y: -60, delay: 1.6)
-            blob(Theme.pink, size: 380, x: -80, y: 340, delay: 3.2)
+            blob(Theme.accent, size: 480, x: -150, y: -330, delay: 0)
+            blob(Theme.violet, size: 440, x: 160, y: -80, delay: 1.8)
+            blob(Theme.pink, size: 400, x: -90, y: 330, delay: 3.4)
+            blob(Theme.accent.opacity(0.8), size: 300, x: 200, y: 90, delay: 5.2)
             // лёгкая сетка-звёзды
             RadialGradient(colors: [.white.opacity(0.05), .clear], center: .topTrailing, startRadius: 0, endRadius: 500)
         }
@@ -64,13 +65,13 @@ struct GlassCard<Content: View>: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
                     .stroke(
-                        LinearGradient(colors: [Color.white.opacity(0.28), Color.white.opacity(0.06)],
+                        LinearGradient(colors: [Color.white.opacity(0.38), Color.white.opacity(0.08)],
                                        startPoint: .topLeading, endPoint: .bottomTrailing),
                         lineWidth: 1
                     )
             )
-            .shadow(color: glow.opacity(glow == .clear ? 0 : 0.45), radius: 24, y: 8)
-            .shadow(color: .black.opacity(0.35), radius: 18, y: 10)
+            .shadow(color: glow.opacity(glow == .clear ? 0 : 0.5), radius: 28, y: 12)
+            .shadow(color: .black.opacity(0.45), radius: 22, y: 14)
     }
 }
 
@@ -98,6 +99,16 @@ struct PowerButton: View {
 
     var body: some View {
         ZStack {
+            // внешнее свечение вокруг подключённой кнопки
+            if isOn {
+                Circle()
+                    .stroke(Theme.accent.opacity(0.35), lineWidth: 5)
+                    .frame(width: 168, height: 168)
+                    .scaleEffect(pulse ? 1.75 : 1)
+                    .opacity(pulse ? 0 : 0.75)
+                    .animation(.easeOut(duration: 2.6).repeatForever(autoreverses: false).delay(0.7), value: pulse)
+            }
+
             // расходящиеся волны при подключении
             if isOn {
                 ForEach(0..<2, id: \.self) { i in

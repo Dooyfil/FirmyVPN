@@ -28,6 +28,8 @@ struct LogsView: View {
                             Text(line.text)
                                 .font(.system(size: 12, design: .monospaced))
                                 .foregroundStyle(Theme.text2)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
                                 .textSelection(.enabled)
                         }
                     }

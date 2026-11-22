@@ -72,9 +72,13 @@ struct ImportView: View {
                         Text("Ссылка подписки")
                             .font(.system(size: 16, weight: .semibold, design: .rounded))
                             .foregroundStyle(Theme.text1)
-                        Text("из Telegram-бота: https://… или base64")
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                        Text("Telegram-боты: https://… или base64")
                             .font(.system(size: 12, design: .rounded))
                             .foregroundStyle(Theme.text3)
+                            .lineLimit(2)
+                            .truncationMode(.tail)
                     }
                 }
                 inputField(icon: "globe", placeholder: "https://t.me/… или https://sub.example/…", text: $subURL)
@@ -119,6 +123,8 @@ struct ImportView: View {
                 Text("Сохраните файл из Telegram («Поделиться → Сохранить в Файлы») и выберите его здесь.")
                     .font(.system(size: 13, design: .rounded))
                     .foregroundStyle(Theme.text2)
+                    .lineLimit(2)
+                    .truncationMode(.tail)
                 NeonButton(title: "Выбрать файл", icon: "folder.fill", color: Theme.accent) {
                     showFile = true
                 }
@@ -151,8 +157,10 @@ struct ImportView: View {
             Text(text)
                 .font(.system(size: 13, weight: .medium, design: .rounded))
                 .foregroundStyle(Theme.text2)
-                .fixedSize(horizontal: false, vertical: true)
+                .lineLimit(2)
+                .truncationMode(.tail)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -175,7 +183,7 @@ struct ImportView: View {
 /// Простая обёртка строк тегов.
 struct FlowTags: View {
     let tags: [String]
-    private let columns = [GridItem(.adaptive(minimum: 92), spacing: 8)]
+    private let columns = [GridItem(.adaptive(minimum: 70), spacing: 8)]
 
     var body: some View {
         LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
@@ -183,8 +191,10 @@ struct FlowTags: View {
                 Text(t)
                     .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(Theme.text2)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
                     .background(Color.white.opacity(0.06), in: Capsule())
                     .overlay(Capsule().stroke(Color.white.opacity(0.1), lineWidth: 1))
             }

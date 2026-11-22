@@ -46,7 +46,7 @@ struct HomeView: View {
     // MARK: Шапка
 
     private var header: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             ZStack {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(Theme.neon)
@@ -58,14 +58,15 @@ struct HomeView: View {
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text("FirmyVPN")
-                    .font(.system(size: 24, weight: .heavy, design: .rounded))
+                    .font(.system(size: 20, weight: .heavy, design: .rounded))
                     .foregroundStyle(Theme.text1)
+                    .lineLimit(1)
                 Text("безопасный туннель")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
                     .foregroundStyle(Theme.text3)
+                    .lineLimit(1)
             }
-            Spacer()
-            StatusPill(text: state.phase.label, color: pillColor)
+            Spacer(minLength: 8)
         }
     }
 
@@ -81,27 +82,32 @@ struct HomeView: View {
     // MARK: Статус
 
     private var statusBlock: some View {
-        VStack(spacing: 8) {
-            Text(state.phase.label)
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundStyle(on ? Theme.ok : Theme.text1)
-                .contentTransition(.opacity)
-                .animation(.easeInOut(duration: 0.25), value: state.phase)
+        HStack(spacing: 8) {
+            VStack(spacing: 8) {
+                Text(state.phase.label)
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundStyle(on ? Theme.ok : Theme.text1)
+                    .contentTransition(.opacity)
+                    .animation(.easeInOut(duration: 0.25), value: state.phase)
 
-            if let err = state.lastError, state.phase == .error {
-                Text(err)
-                    .font(.system(size: 13, design: .rounded))
-                    .foregroundStyle(Theme.err)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 12)
-            }
+                if let err = state.lastError, state.phase == .error {
+                    Text(err)
+                        .font(.system(size: 13, design: .rounded))
+                        .foregroundStyle(Theme.err)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 12)
+                }
 
-            if let srv = state.selectedServer, !on {
-                Text(srv.title)
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle(Theme.text2)
-                    .lineLimit(1)
+                if let srv = state.selectedServer, !on {
+                    Text(srv.title)
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .foregroundStyle(Theme.text2)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
             }
+            Spacer()
+            StatusPill(text: state.phase.label, color: pillColor)
         }
         .frame(maxWidth: .infinity)
     }
@@ -122,11 +128,14 @@ struct HomeView: View {
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.text1)
                         .lineLimit(1)
+                        .truncationMode(.tail)
                     Text(subtitle)
                         .font(.system(size: 12, design: .rounded))
                         .foregroundStyle(Theme.text3)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                 }
-                Spacer()
+                Spacer(minLength: 6)
                 pingChip
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .bold))
@@ -233,7 +242,8 @@ struct HomeView: View {
         }
         .padding(14)
         .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Color.white.opacity(0.08), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(color.opacity(0.35), lineWidth: 1))
+        .shadow(color: color.opacity(0.2), radius: 10, y: 3)
     }
 
     private func barFraction(_ v: Double) -> CGFloat {
@@ -287,21 +297,23 @@ struct HomeView: View {
     }
 
     private func quickToggle(title: String, icon: String, isOn: Binding<Bool>) -> some View {
-        VStack(spacing: 8) {
+        HStack(spacing: 5) {
             Image(systemName: icon)
-                .font(.system(size: 18, weight: .semibold))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(isOn.wrappedValue ? Theme.accent : Theme.text3)
-                .frame(width: 44, height: 44)
+                .frame(width: 36, height: 36)
                 .background(
                     Circle().fill(isOn.wrappedValue ? Theme.accent.opacity(0.16) : Color.white.opacity(0.06))
                 )
                 .overlay(Circle().stroke(isOn.wrappedValue ? Theme.accent.opacity(0.5) : Color.white.opacity(0.1), lineWidth: 1))
             Text(title)
-                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .font(.system(size: 10, weight: .medium, design: .rounded))
                 .foregroundStyle(isOn.wrappedValue ? Theme.text2 : Theme.text3)
+                .lineLimit(1)
+                .truncationMode(.tail)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity, minHeight: 64)
+        .padding(.vertical, 11)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 20, style: .continuous)

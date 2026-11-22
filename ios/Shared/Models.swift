@@ -167,9 +167,24 @@ struct AppSettings: Codable {
 
 // MARK: - Результат импорта
 
+/// Связка с Go-ядром: поля могут быть null/отсутствовать (парсер возвращает
+/// `errors: null` при отсутствии ошибок), декодинг — толерантный.
 struct ImportResult: Codable {
     var servers: [Server] = []
     var errors: [String] = []
+
+    init(servers: [Server] = [], errors: [String] = []) {
+        self.servers = servers
+        self.errors = errors
+    }
+
+    enum CodingKeys: String, CodingKey { case servers, errors }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        servers = (try? c.decodeIfPresent([Server].self, forKey: .servers)) ?? []
+        errors = (try? c.decodeIfPresent([String].self, forKey: .errors)) ?? []
+    }
 }
 
 // MARK: - Статистика трафика

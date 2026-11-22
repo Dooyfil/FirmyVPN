@@ -102,7 +102,7 @@ struct SpeedTestView: View {
 
     private var controlsCard: some View {
         GlassCard {
-            VStack(spacing: 14) {
+            VStack(spacing: 12) {
                 NeonButton(title: running ? "Тест выполняется…" : "Запустить полный тест",
                            icon: running ? nil : "play.fill") {
                     runFull()
@@ -110,14 +110,14 @@ struct SpeedTestView: View {
                 .disabled(running)
                 .opacity(running ? 0.6 : 1)
 
-                HStack(spacing: 12) {
+                HStack(spacing: 10) {
                     NeonButton(title: "Задержка", icon: "timer", filled: false) { runLatencyOnly() }
                         .disabled(running)
                     NeonButton(title: "Скачать", icon: "arrow.down", filled: false) { runDownloadOnly() }
                         .disabled(running)
-                    NeonButton(title: "Загрузить", icon: "arrow.up", filled: false) { runUploadOnly() }
-                        .disabled(running)
                 }
+                NeonButton(title: "Загрузить", icon: "arrow.up", filled: false) { runUploadOnly() }
+                    .disabled(running)
                 Text(state.vpn.isConnected
                      ? "Тест идёт через туннель: покажет реальную скорость VPN."
                      : "VPN отключён — тест покажет скорость прямого соединения.")

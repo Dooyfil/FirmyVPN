@@ -146,8 +146,11 @@ final class AppState: ObservableObject {
             importBanner = error?.localizedDescription ?? "Не удалось разобрать ввод"
             return nil
         }
-        guard let res = try? JSONDecoder().decode(ImportResult.self, from: Data(json.utf8)) else {
-            importBanner = "Ошибка разбора результата"
+        let res: ImportResult
+        do {
+            res = try JSONDecoder().decode(ImportResult.self, from: Data(json.utf8))
+        } catch {
+            importBanner = "Ошибка разбора результата: \(error.localizedDescription)"
             return nil
         }
 
