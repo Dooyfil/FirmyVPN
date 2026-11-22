@@ -82,6 +82,7 @@ struct Server: Codable, Identifiable, Hashable {
     enum CodingKeys: String, CodingKey {
         case id, name, type, host, port, uri, outbound, source, subUrl, subName, addedAt, ping
         case protocolName = "protocol"
+        case uiScaleX, uiScaleY
     }
 
     init() {}
@@ -135,6 +136,11 @@ struct AppSettings: Codable {
     var mtu = 9000
     var udpBlock = false
 
+    /// Глобальный масштаб интерфейса: ширина и высота (0.6–1.4).
+    /// Чтобы на маленьком экране всё вписывалось — уменьшите.
+    var uiScaleX = 1.0
+    var uiScaleY = 1.0
+
     init() {}
 
     init(from decoder: Decoder) throws {
@@ -162,6 +168,8 @@ struct AppSettings: Codable {
         disableIPv6 = try c.decodeIfPresent(Bool.self, forKey: .disableIPv6) ?? false
         mtu = try c.decodeIfPresent(Int.self, forKey: .mtu) ?? 9000
         udpBlock = try c.decodeIfPresent(Bool.self, forKey: .udpBlock) ?? false
+        uiScaleX = try c.decodeIfPresent(Double.self, forKey: .uiScaleX) ?? 1.0
+        uiScaleY = try c.decodeIfPresent(Double.self, forKey: .uiScaleY) ?? 1.0
     }
 }
 

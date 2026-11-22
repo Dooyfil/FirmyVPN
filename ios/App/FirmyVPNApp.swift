@@ -52,6 +52,12 @@ struct RootView: View {
             }
             .tint(Theme.accent)
             .toolbarBackground(.ultraThinMaterial, for: .tabBar)
+            // Глобальный масштаб интерфейса (ширина/высота, слайдеры в Настройках)
+            .scaleEffect(x: CGFloat(state.settings.uiScaleX),
+                         y: CGFloat(state.settings.uiScaleY),
+                         anchor: .topLeading)
+            .animation(.spring(response: 0.35, dampingFraction: 0.85), value: state.settings.uiScaleX)
+            .animation(.spring(response: 0.35, dampingFraction: 0.85), value: state.settings.uiScaleY)
         }
         .onChange(of: scenePhase) { p in
             guard p == .active else { return }

@@ -13,6 +13,7 @@ struct SettingsView: View {
                     dnsCard
                     filterCard
                     systemCard
+                    scaleCard
                     aboutCard
                 }
                 .padding(.horizontal, 20)
@@ -192,6 +193,38 @@ struct SettingsView: View {
             }
             .padding(.vertical, 4)
         }
+    }
+
+    private var scaleCard: some View {
+        settingsCard("Масштаб интерфейса") {
+            scaleRow(icon: "arrow.left.and.right", title: "Ширина",
+                     binding: Binding(get: { state.settings.uiScaleX },
+                                      set: { state.settings.uiScaleX = $0; state.save() }))
+            Divider().overlay(Color.white.opacity(0.08))
+            scaleRow(icon: "arrow.up.and.down", title: "Высота",
+                     binding: Binding(get: { state.settings.uiScaleY },
+                                      set: { state.settings.uiScaleY = $0; state.save() }))
+        }
+    }
+
+    private func scaleRow(icon: String, title: String, binding: Binding<Double>) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundStyle(Theme.accent)
+                .frame(width: 28)
+            Text(title)
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .foregroundStyle(Theme.text2)
+                .lineLimit(1)
+            Spacer()
+            Text(String(format: "%.2f", binding.wrappedValue))
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(Theme.accent)
+            Slider(value: binding, in: 0.6...1.4, step: 0.05)
+                .frame(width: 110)
+                .tint(Theme.accent)
+        }
+        .padding(.vertical, 4)
     }
 
     private var aboutCard: some View {
