@@ -132,6 +132,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         working-directory: ios
         run: |
+          # переименование собранного файла под название айфон-версии
+          if [ -f FirmyVPN-unsigned.ipa ]; then mv -f FirmyVPN-unsigned.ipa FirmyVPN-iPhone-version.ipa; fi
+          ls -la FirmyVPN-iPhone-version.ipa 2>/dev/null || ls -la FirmyVPN-unsigned.ipa
           if gh release view ios-unsigned >/dev/null 2>&1; then
             gh release edit ios-unsigned --title "FirmyVPN — Айфон-версия (unsigned IPA)" \
               --notes "Айфон-версия VPN (FirmyVPN) — это версия для iPhone. Подпишите IPA своим Apple-сертификатом (ESign, Feather, Scarlet, zsign) и установите на iPhone." 2>/dev/null || true
@@ -142,6 +145,7 @@ jobs:
               --title "FirmyVPN — Айфон-версия (unsigned IPA)" \
               --notes "Айфон-версия VPN (FirmyVPN) — это версия для iPhone. Подпишите IPA своим Apple-сертификатом (ESign, Feather, Scarlet, zsign) и установите на iPhone."
           fi
+          echo "iOS release ready"
 
       - name: Релиз ПК-версии (установщик)
         env:
