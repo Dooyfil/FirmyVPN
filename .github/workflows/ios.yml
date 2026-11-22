@@ -1,0 +1,115 @@
+# FirmyVPN для iOS на макинах GitHub — Mac не нужен.
+#
+# Каждый push: ядро (Libbox.xcframework, кэшируется) → XcodeGen → архив без
+# подписи → готовый FirmyVPN-unsigned.ipa артефактом. Ничего не подписано,
+# секреты не нужны. Подписываете IPA своим сертификатом (ESign / Feather /
+# Scarlet / zsign) и ставите на iPhone.
+name: iOS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Опубликовать IPA в релизах"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  # ---------- Ядро: gomobile bind → Libbox.xcframework ----------
+  cores:
+    name: Ядро (Libbox.xcframework)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ios/core/go.mod
+
+      - name: Кэш Go
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-cores-${{ hashFiles('ios/core/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-cores-
+
+      - name: gomobile bind (sing-box + firmycore)
+        run: PLATFORMS=ios bash ios/scripts/build-libbox.sh
+
+      - name: Размер фреймворка
+        run: du -sh ios/Frameworks/Libbox.xcframework
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Libbox.xcframework
+          path: ios/Frameworks
+          retention-days: 1
+
+  # ---------- Приложение: XcodeGen → архив → unsigned IPA ----------
+  ipa:
+    name: Сборка IPA
+    needs: cores
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: Libbox.xcframework
+          path: ios/Frameworks
+
+      - name: XcodeGen
+        run: |
+          command -v xcodegen >/dev/null || brew install xcodegen
+          cd ios && xcodegen generate
+
+      - name: Архив без подписи
+        working-directory: ios
+        run: |
+          xcodebuild \
+            -project FirmyVPN.xcodeproj \
+            -scheme FirmyVPN \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath build/FirmyVPN.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            archive
+
+      - name: Сборка .ipa (Payload/)
+        working-directory: ios
+        run: |
+          mkdir -p Payload
+          cp -R build/FirmyVPN.xcarchive/Products/Applications/*.app Payload/
+          zip -qry FirmyVPN-unsigned.ipa Payload
+          ls -la FirmyVPN-unsigned.ipa
+          du -sh Payload/FirmyVPN.app
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FirmyVPN-unsigned
+          path: ios/FirmyVPN-unsigned.ipa
+          retention-days: 30
+
+      - name: Опубликовать в релизах
+        if: github.event_name == 'workflow_dispatch' && inputs.release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        working-directory: ios
+        run: |
+          if gh release view ios-unsigned >/dev/null 2>&1; then
+            gh release upload ios-unsigned FirmyVPN-unsigned.ipa --clobber
+          else
+            gh release create ios-unsigned FirmyVPN-unsigned.ipa \
+              --title "FirmyVPN — unsigned IPA" \
+              --notes "Неподписанный IPA. Подпишите своим сертификатом (ESign, Feather, Scarlet, zsign) и установите на iPhone."
+          fi

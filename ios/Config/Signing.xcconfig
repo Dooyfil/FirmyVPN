@@ -1,0 +1,14 @@
+// Параметры подписи. Для сборки на GitHub (CODE_SIGNING_ALLOWED=NO) значения
+// не нужны — там ставятся заглушки. Перед подписанием своим сертификатом
+// (ESign / Feather / Scarlet) их можно не менять: переподписка подставит своё.
+//
+// DEVELOPMENT_TEAM — Team ID (developer.apple.com → Membership, 10 символов).
+// BUNDLE_PREFIX    — bundle id приложения; расширение = $(BUNDLE_PREFIX).PacketTunnel.
+// APP_GROUP        — общая папка приложения и расширения (начинается с "group.").
+
+DEVELOPMENT_TEAM = XXXXXXXXXX
+BUNDLE_PREFIX = com.firmyvpn.app
+APP_GROUP = group.com.firmyvpn.app
+CODE_SIGN_STYLE = Automatic
+
+#include? "Local.xcconfig"

@@ -1,0 +1,14 @@
+# Xcode / CI
+Frameworks/
+build/
+Payload/
+*.xcodeproj
+xcuserdata/
+DerivedData/
+*.xcarchive
+
+# Go
+core/vendor/
+
+# OS
+.DS_Store
