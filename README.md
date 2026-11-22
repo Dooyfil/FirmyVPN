@@ -1,19 +1,48 @@
-# README
+# FirmyVPN
 
-## About
+VPN-клиент: **Windows** (Go + sing-box + Wails + React) и **iOS** (Go + sing-box +
+SwiftUI, собирается в готовый `.ipa` на GitHub — Mac не нужен).
 
-This is the official Wails React template.
+## Windows
 
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
+Готовые файлы:
 
-## Live Development
+- `build/bin/FirmyVPN.exe` — приложение;
+- `installer/FirmyVPN-Setup.exe` — установщик.
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+Сборка заново:
 
-## Building
+```powershell
+wails build -skipbindings -tags "with_gvisor,with_quic,with_dhcp,with_wireguard,with_utls,with_acme,with_clash_api,with_tailscale,with_ccm,with_ocm,with_cloudflared,with_naive_outbound,with_purego,with_usbip,with_openvpn,with_openconnect,badlinkname,tfogo_checklinkname0" -ldflags "-checklinkname=0"
+# установщик:
+& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\FirmyVPN.iss
+```
 
-To build a redistributable, production mode package, use `wails build`.
+Возможности: импорт всех форматов ключей из Telegram-ботов (vless, vmess,
+trojan, ss, hysteria2, tuic, anytls, подписки в текте/base64, sing-box JSON,
+Clash YAML), TUN и режим прокси, kill switch, выбор DNS, правила маршрутизации,
+пинг, график скорости, статистика сессии, тест скорости, журнал, трей,
+автозапуск, горячая клавиша Ctrl+Alt+V.
+
+## iOS
+
+Смотрите [`ios/README.md`](ios/README.md): проект загружается на GitHub,
+Actions собирает **неподписанный** `FirmyVPN-unsigned.ipa`, вы подписываете его
+своим сертификатом (ESign / Feather / Scarlet / zsign) и ставите на iPhone.
+
+- ядро Go — `ios/core/` (тот же парсер и сборка конфига, что на PC);
+- расширение VPN — `ios/PacketTunnel/` (sing-box внутри Network Extension);
+- приложение — `ios/App/` (SwiftUI, тёмный аврора-дизайн).
+
+## Структура
+
+```
+app.go            — Wails-связка (все методы для UI)
+internal/engine   — сборка конфига, туннель, статистика, пинг, speed test
+internal/parse    — парсер ключей/подписок
+internal/store    — хранение серверов и настроек
+frontend/         — React-интерфейс
+installer/        — Inno Setup
+ios/              — iOS-приложение и ядро для gomobile
+.github/workflows — сборка iOS-IPA на макинах GitHub
+```

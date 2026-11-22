@@ -29,7 +29,9 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version-file: ios/core/go.mod
+          # сверяется с локальной сборкой (проверено на Go 1.27.x)
+          go-version: stable
+          cache-dependency-path: ios/core/go.sum
 
       - name: Кэш Go
         uses: actions/cache@v4
