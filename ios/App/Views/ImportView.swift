@@ -80,6 +80,7 @@ struct ImportView: View {
                             .lineLimit(2)
                             .truncationMode(.tail)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 inputField(icon: "globe", placeholder: "https://t.me/… или https://sub.example/…", text: $subURL)
                 inputField(icon: "tag", placeholder: "Название (необязательно)", text: $subName)
@@ -119,12 +120,14 @@ struct ImportView: View {
                             .font(.system(size: 12, design: .rounded))
                             .foregroundStyle(Theme.text3)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 Text("Сохраните файл из Telegram («Поделиться → Сохранить в Файлы») и выберите его здесь.")
                     .font(.system(size: 13, design: .rounded))
                     .foregroundStyle(Theme.text2)
                     .lineLimit(2)
                     .truncationMode(.tail)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 NeonButton(title: "Выбрать файл", icon: "folder.fill", color: Theme.accent) {
                     showFile = true
                 }

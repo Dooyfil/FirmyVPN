@@ -49,6 +49,9 @@ struct SettingsView: View {
                 Text(title)
                     .font(.system(size: 15, weight: .medium, design: .rounded))
                     .foregroundStyle(Theme.text2)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .toggleStyle(NeonToggleStyle())

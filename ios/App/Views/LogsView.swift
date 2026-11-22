@@ -30,6 +30,7 @@ struct LogsView: View {
                                 .foregroundStyle(Theme.text2)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 .textSelection(.enabled)
                         }
                     }

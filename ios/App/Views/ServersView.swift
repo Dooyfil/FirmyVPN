@@ -113,6 +113,7 @@ struct ServersView: View {
                             .truncationMode(.tail)
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 Spacer(minLength: 8)
                 pingBadge(s.ping)
                 if editMode {

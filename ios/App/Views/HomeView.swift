@@ -82,32 +82,35 @@ struct HomeView: View {
     // MARK: Статус
 
     private var statusBlock: some View {
-        HStack(spacing: 8) {
-            VStack(spacing: 8) {
+        VStack(spacing: 8) {
+            HStack(spacing: 8) {
                 Text(state.phase.label)
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(on ? Theme.ok : Theme.text1)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
                     .contentTransition(.opacity)
                     .animation(.easeInOut(duration: 0.25), value: state.phase)
-
-                if let err = state.lastError, state.phase == .error {
-                    Text(err)
-                        .font(.system(size: 13, design: .rounded))
-                        .foregroundStyle(Theme.err)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 12)
-                }
-
-                if let srv = state.selectedServer, !on {
-                    Text(srv.title)
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundStyle(Theme.text2)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                }
+                StatusPill(text: state.phase.label, color: pillColor)
             }
-            Spacer()
-            StatusPill(text: state.phase.label, color: pillColor)
+
+            if let err = state.lastError, state.phase == .error {
+                Text(err)
+                    .font(.system(size: 13, design: .rounded))
+                    .foregroundStyle(Theme.err)
+                    .lineLimit(2)
+                    .truncationMode(.tail)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 12)
+            }
+
+            if let srv = state.selectedServer, !on {
+                Text(srv.title)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(Theme.text2)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
         }
         .frame(maxWidth: .infinity)
     }
@@ -135,6 +138,7 @@ struct HomeView: View {
                         .lineLimit(1)
                         .truncationMode(.tail)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 Spacer(minLength: 6)
                 pingChip
                 Image(systemName: "chevron.right")
