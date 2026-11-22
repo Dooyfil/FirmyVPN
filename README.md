@@ -3,6 +3,13 @@
 VPN-клиент: **Windows** (Go + sing-box + Wails + React) и **iOS** (Go + sing-box +
 SwiftUI, собирается в готовый `.ipa` на GitHub — Mac не нужен).
 
+## Версии (последние релизы)
+
+- **[📱 Айфон-версия (iOS)](https://github.com/Dooyfil/FirmyVPN/releases/download/ios-unsigned/FirmyVPN-iPhone-version.ipa)** —
+  версия для iPhone, подписывайте своим Apple-сертификатом.
+- **[💻 ПК-версия (Windows)](https://github.com/Dooyfil/FirmyVPN/releases/download/pc-version/FirmyVPN-Setup.exe)** —
+  установщик ПК-версии VPN.
+
 ## Windows
 
 Готовые файлы:
@@ -27,7 +34,7 @@ Clash YAML), TUN и режим прокси, kill switch, выбор DNS, пра
 ## iOS
 
 Смотрите [`ios/README.md`](ios/README.md): проект загружается на GitHub,
-Actions собирает **неподписанный** `FirmyVPN-unsigned.ipa`, вы подписываете его
+Actions собирает **неподписанный** `FirmyVPN-iPhone-version.ipa`, вы подписываете его
 своим сертификатом (ESign / Feather / Scarlet / zsign) и ставите на iPhone.
 
 - ядро Go — `ios/core/` (тот же парсер и сборка конфига, что на PC);

@@ -127,15 +127,34 @@ jobs:
           path: ios/FirmyVPN-unsigned.ipa
           retention-days: 30
 
-      - name: Опубликовать в релизах
+      - name: Опубликовать в релизах — Айфон-версия
         env:
           GH_TOKEN: ${{ github.token }}
         working-directory: ios
         run: |
           if gh release view ios-unsigned >/dev/null 2>&1; then
-            gh release upload ios-unsigned FirmyVPN-unsigned.ipa --clobber
+            gh release edit ios-unsigned --title "FirmyVPN — Айфон-версия (unsigned IPA)" \
+              --notes "Айфон-версия VPN (FirmyVPN) — это версия для iPhone. Подпишите IPA своим Apple-сертификатом (ESign, Feather, Scarlet, zsign) и установите на iPhone." 2>/dev/null || true
+            gh release delete-asset ios-unsigned FirmyVPN-unsigned.ipa --yes 2>/dev/null || true
+            gh release upload ios-unsigned FirmyVPN-iPhone-version.ipa --clobber
           else
-            gh release create ios-unsigned FirmyVPN-unsigned.ipa \
-              --title "FirmyVPN — unsigned IPA" \
-              --notes "Неподписанный IPA. Подпишите своим сертификатом (ESign, Feather, Scarlet, zsign) и установите на iPhone."
+            gh release create ios-unsigned FirmyVPN-iPhone-version.ipa \
+              --title "FirmyVPN — Айфон-версия (unsigned IPA)" \
+              --notes "Айфон-версия VPN (FirmyVPN) — это версия для iPhone. Подпишите IPA своим Apple-сертификатом (ESign, Feather, Scarlet, zsign) и установите на iPhone."
+          fi
+
+      - name: Релиз ПК-версии (установщик)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          SHA=$(shasum -a 256 installer/FirmyVPN-Setup.exe 2>/dev/null | awk '{print $1}')
+          [ -n "$SHA" ] || SHA="н/д"
+          if gh release view pc-version >/dev/null 2>&1; then
+            gh release edit pc-version --title "FirmyVPN — ПК-версия (установщик)" --notes "ПК-версия VPN — установщик FirmyVPN-Setup.exe (SHA256: $SHA)." 2>/dev/null || true
+            gh release upload pc-version installer/FirmyVPN-Setup.exe --clobber
+          else
+            gh release create pc-version installer/FirmyVPN-Setup.exe \
+              --title "FirmyVPN — ПК-версия (установщик)" \
+              --notes "ПК-версия VPN — установщик FirmyVPN-Setup.exe (собран Inno Setup 6). SHA256: $SHA."
           fi
