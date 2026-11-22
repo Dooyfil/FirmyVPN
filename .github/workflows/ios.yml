@@ -76,8 +76,10 @@ jobs:
           cd ios && xcodegen generate
           ls -la FirmyVPN.xcodeproj/project.pbxproj
 
-      - name: Архив без подписи
+      - name: Архив без подписи (информация об ошибке -> бранч ci-debug)
         working-directory: ios
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set +e
           xcodebuild \
@@ -89,18 +91,18 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            archive 2>&1 | tee build_archive.log
-          echo "XCODEBUILD_EXIT_CODE=${PIPESTATUS[0]}"
+            archive 2>&1 | tee ci-archive.log
+          rc=${PIPESTATUS[0]}
+          echo "$rc" > ci_exit.txt
+          echo "XCODEBUILD_EXIT=$rc"
           echo "== archive dir =="
-          ls -d build/FirmyVPN.xcarchive 2>/dev/null && ls -R build/FirmyVPN.xcarchive/Products/Applications | head -30 || echo "NO ARCHIVE DIR"
-          du -sh build/FirmyVPN.xcarchive 2>/dev/null
-
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: build-log
-          path: ios/build_archive.log
-          retention-days: 30
+          ls -d build/FirmyVPN.xcarchive 2>/dev/null || echo "NO ARCHIVE DIR"
+          if [ "$rc" != "0" ]; then
+            git config user.email "ci@firmyvpn"; git config user.name "FirmyVPN CI"
+            git add ci-archive.log ci_exit.txt 2>/dev/null
+            git commit -m "ci debug: archive rc=$rc" -q 2>/dev/null
+            git push --force https://x-access-token:$GH_TOKEN@github.com/Dooyfil/FirmyVPN.git HEAD:ci-debug-archive 2>&1 | tail -2
+          fi
 
       - name: Сборка .ipa (Payload/)
         working-directory: ios
