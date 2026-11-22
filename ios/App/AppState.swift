@@ -111,7 +111,7 @@ final class AppState: ObservableObject {
     func ping(_ s: Server, done: @escaping (Int) -> Void) {
         let host = s.host, port = s.port
         DispatchQueue.global(qos: .userInitiated).async {
-            let ms = Int(FirmycorePingTCP(host, Int32(port), 3000))
+            let ms = Int(FirmycorePingTCP(host, port, 3000))
             DispatchQueue.main.async { done(ms) }
         }
     }
@@ -141,7 +141,8 @@ final class AppState: ObservableObject {
     /// Разбор текста (ссылки/base64/JSON/YAML) через Go-ядро; дубли пропускаются.
     func importText(_ text: String, source: String, subURL: String = "", subName: String = "") -> ImportResult? {
         var error: NSError?
-        guard let json = FirmycoreParseInputJSON(text, source, subURL, subName, &error) else {
+        let json = FirmycoreParseInputJSON(text, source, subURL, subName, &error)
+        guard !json.isEmpty else {
             importBanner = error?.localizedDescription ?? "Не удалось разобрать ввод"
             return nil
         }

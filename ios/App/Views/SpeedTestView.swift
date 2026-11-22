@@ -180,7 +180,7 @@ struct SpeedTestView: View {
         var samples: [Int] = []
         let host = srv.host, port = srv.port
         for _ in 0..<7 {
-            let ms = Int(FirmycorePingTCP(host, Int32(port), 2500))
+            let ms = Int(FirmycorePingTCP(host, port, 2500))
             if ms >= 0 { samples.append(ms) }
             try? await Task.sleep(nanoseconds: 180_000_000)
         }

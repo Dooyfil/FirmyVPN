@@ -82,7 +82,7 @@ final class VPNController: ObservableObject {
         let proto = NETunnelProviderProtocol()
         proto.providerBundleIdentifier = Self.extensionBundleID
         proto.serverAddress = server.host.isEmpty ? "FirmyVPN" : server.host
-        proto.serverPort = Int32(server.port)
+        // serverPort нет в NETunnelProviderProtocol этого SDK; все данные — в providerConfiguration
         proto.includeAllNetworks = settings.killSwitch
         // LAN должен работать мимо VPN, только если пользователь не просил блокировать
         proto.excludeLocalNetworks = !settings.blockLan
