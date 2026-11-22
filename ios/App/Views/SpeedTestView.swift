@@ -85,7 +85,7 @@ struct SpeedTestView: View {
             }
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(value)
-                    .font(.system(size: 28, weight: .heavy, design: .rounded))
+                    .font(.system(size: 22, weight: .heavy, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(Theme.text1)
                     .contentTransition(.numericText())

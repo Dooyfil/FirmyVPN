@@ -58,11 +58,11 @@ struct HomeView: View {
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text("FirmyVPN")
-                    .font(.system(size: 20, weight: .heavy, design: .rounded))
+                    .font(.system(size: 16, weight: .heavy, design: .rounded))
                     .foregroundStyle(Theme.text1)
                     .lineLimit(1)
                 Text("безопасный туннель")
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .font(.system(size: 9, weight: .medium, design: .rounded))
                     .foregroundStyle(Theme.text3)
                     .lineLimit(1)
             }
@@ -130,7 +130,7 @@ struct HomeView: View {
                 }
                 VStack(alignment: .leading, spacing: 3) {
                     Text(state.selectedServer?.title ?? "Сервер не выбран")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.text1)
                         .lineLimit(1)
                         .truncationMode(.tail)
@@ -225,7 +225,7 @@ struct HomeView: View {
             }
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 AnimatedNumber(value: value / 1024, format: value >= 1024 * 1024 ? "%.0f" : "%.1f")
-                    .font(.system(size: 26, weight: .heavy, design: .rounded))
+                    .font(.system(size: 22, weight: .heavy, design: .rounded))
                     .foregroundStyle(Theme.text1)
                 Text(value >= 1024 * 1024 ? "МБ/с" : "КБ/с")
                     .font(.system(size: 11, weight: .semibold, design: .rounded))
