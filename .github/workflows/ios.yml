@@ -79,7 +79,7 @@ jobs:
       - name: Архив без подписи
         working-directory: ios
         run: |
-          set -e
+          set +e
           xcodebuild \
             -project FirmyVPN.xcodeproj \
             -scheme FirmyVPN \
@@ -89,10 +89,18 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            archive
-          echo "== archive ok =="
-          ls -R build/FirmyVPN.xcarchive/Products/Applications | head -30
-          du -sh build/FirmyVPN.xcarchive
+            archive 2>&1 | tee build_archive.log
+          echo "XCODEBUILD_EXIT_CODE=${PIPESTATUS[0]}"
+          echo "== archive dir =="
+          ls -d build/FirmyVPN.xcarchive 2>/dev/null && ls -R build/FirmyVPN.xcarchive/Products/Applications | head -30 || echo "NO ARCHIVE DIR"
+          du -sh build/FirmyVPN.xcarchive 2>/dev/null
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-log
+          path: ios/build_archive.log
+          retention-days: 30
 
       - name: Сборка .ipa (Payload/)
         working-directory: ios
