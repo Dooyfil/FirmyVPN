@@ -157,8 +157,8 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
 
     private func buildConfig(serverJSON: String, settingsJSON: String) throws -> String {
         var error: NSError?
-        guard let config = FirmycoreBuildConfigJSON(serverJSON, settingsJSON, AppGroup.container.path, &error)
-        else { throw error ?? fail("сборка конфига") }
+        let config = FirmycoreBuildConfigJSON(serverJSON, settingsJSON, AppGroup.container.path, &error)
+        guard !config.isEmpty else { throw error ?? fail("сборка конфига") }
         try? Data(config.utf8).write(to: AppGroup.lastConfigURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
         return config
     }

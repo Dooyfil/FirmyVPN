@@ -3,7 +3,7 @@ import Foundation
 // MARK: - JSON (вход/выход Go-ядра)
 
 /// Произвольный JSON: outbound сервера приходит из Go как сырой объект.
-enum JSONValue: Codable {
+enum JSONValue: Codable, Equatable, Hashable {
     case null
     case bool(Bool)
     case number(Double)
@@ -30,6 +30,33 @@ enum JSONValue: Codable {
         case .string(let v): try c.encode(v)
         case .array(let v): try c.encode(v)
         case .object(let v): try c.encode(v)
+        }
+    }
+
+    static func == (lhs: JSONValue, rhs: JSONValue) -> Bool {
+        switch (lhs, rhs) {
+        case (.null, .null): return true
+        case (.bool(let a), .bool(let b)): return a == b
+        case (.number(let a), .number(let b)): return a == b
+        case (.string(let a), .string(let b)): return a == b
+        case (.array(let a), .array(let b)):
+            return a.count == b.count && zip(a, b).allSatisfy { $0 == $1 }
+        case (.object(let a), .object(let b)):
+            return a.keys.count == b.keys.count && a.allSatisfy { k, v in
+                (b[k]).map { $0 == v } ?? false
+            }
+        default: return false
+        }
+    }
+
+    func hash(into hasher: inout Hasher) {
+        switch self {
+        case .null: hasher.combine("null")
+        case .bool(let v): hasher.combine("bool"); hasher.combine(v)
+        case .number(let v): hasher.combine("number"); hasher.combine(v)
+        case .string(let v): hasher.combine("string"); hasher.combine(v)
+        case .array(let v): hasher.combine("array"); hasher.combine(v.count); v.forEach { $0.hash(into: &hasher) }
+        case .object(let v): hasher.combine("object"); hasher.combine(v.keys.count); v.forEach { k, val in hasher.combine(k); val.hash(into: &hasher) }
         }
     }
 }
