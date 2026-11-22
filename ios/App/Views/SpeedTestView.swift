@@ -61,13 +61,13 @@ struct SpeedTestView: View {
                     .animation(.spring(response: 0.4, dampingFraction: 0.9), value: progress)
                 }
 
-                HStack(spacing: 12) {
+                VStack(spacing: 12) {
                     metric(icon: "arrow.down", color: Theme.accent, title: "Загрузка",
                            value: download > 0 ? String(format: "%.1f", download) : "—", unit: "Мбит/с")
                     metric(icon: "arrow.up", color: Theme.violet, title: "Отдача",
                            value: upload > 0 ? String(format: "%.1f", upload) : "—", unit: "Мбит/с")
                 }
-                HStack(spacing: 12) {
+                VStack(spacing: 12) {
                     metric(icon: "timer", color: Theme.ok, title: "Задержка",
                            value: latency != nil ? "\(latency!.avgMs)" : "—", unit: "мс")
                     metric(icon: "waveform.path.ecg", color: Theme.warn, title: "Джиттер",
@@ -95,7 +95,7 @@ struct SpeedTestView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
+        .padding(10)
         .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Color.white.opacity(0.08), lineWidth: 1))
     }

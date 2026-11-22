@@ -237,6 +237,7 @@ struct NeonButton: View {
     var icon: String? = nil
     var color: Color = Theme.accent
     var filled: Bool = true
+    var fontSize: CGFloat = 15
     let action: () -> Void
 
     var body: some View {
@@ -245,7 +246,7 @@ struct NeonButton: View {
                 if let icon { Image(systemName: icon) }
                 Text(title)
             }
-            .font(.system(size: 15, weight: .semibold, design: .rounded))
+            .font(.system(size: fontSize, weight: .semibold, design: .rounded))
             .foregroundStyle(filled ? Color.white : color)
             .padding(.horizontal, 18)
             .padding(.vertical, 12)

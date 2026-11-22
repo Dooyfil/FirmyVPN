@@ -59,6 +59,8 @@ struct ServersView: View {
                 .font(.system(size: 14, design: .rounded))
                 .foregroundStyle(Theme.text3)
                 .multilineTextAlignment(.center)
+                .lineLimit(3)
+                .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.horizontal, 40)
         }
     }

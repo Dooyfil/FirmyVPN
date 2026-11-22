@@ -101,7 +101,8 @@ struct HomeView: View {
                     .lineLimit(2)
                     .truncationMode(.tail)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 8)
+                    .frame(maxWidth: .infinity)
             }
 
             if let srv = state.selectedServer, !on {
@@ -110,6 +111,7 @@ struct HomeView: View {
                     .foregroundStyle(Theme.text2)
                     .lineLimit(1)
                     .truncationMode(.tail)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .frame(maxWidth: .infinity)
