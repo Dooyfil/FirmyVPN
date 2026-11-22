@@ -82,7 +82,6 @@ struct Server: Codable, Identifiable, Hashable {
     enum CodingKeys: String, CodingKey {
         case id, name, type, host, port, uri, outbound, source, subUrl, subName, addedAt, ping
         case protocolName = "protocol"
-        case uiScaleX, uiScaleY
     }
 
     init() {}
@@ -140,6 +139,13 @@ struct AppSettings: Codable {
     /// Чтобы на маленьком экране всё вписывалось — уменьшите.
     var uiScaleX = 1.0
     var uiScaleY = 1.0
+
+    enum CodingKeys: String, CodingKey {
+        case mode, killSwitch, blockLan, blockBt, setSystemProxy, dns, autostart, startMinimized
+        case closeToTray, hotkeyEnabled, logLevel, proxyPort, strictRoute, selectedServer, lastMode
+        case autoConnect, fastestServer, customDNS, bypassDomains, blockAds, disableIPv6, mtu
+        case udpBlock, uiScaleX, uiScaleY
+    }
 
     init() {}
 
