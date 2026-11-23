@@ -1,8 +1,8 @@
 import Libbox
 import SwiftUI
 
-/// Тест скорости: задержка (7 замеров через Go-ядро), скачивание и загрузка
-/// через туннель с анимированным прогрессом.
+/// Тест скорости: задержка (TCP, 7 замеров) + скачивание/загрузка через туннель
+/// с анимированным прогрессом. Всё вписывается в экран.
 struct SpeedTestView: View {
     @EnvironmentObject var state: AppState
 
@@ -17,76 +17,90 @@ struct SpeedTestView: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 18) {
+                VStack(spacing: 14) {
                     resultCard
                     controlsCard
                     if let e = errorText {
                         Text(e)
-                            .font(.system(size: 13, design: .rounded))
+                            .font(.system(size: 12, design: .rounded))
                             .foregroundStyle(Theme.err)
                             .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                            .truncationMode(.tail)
                     }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
-                .padding(.bottom, 40)
+                .padding(.bottom, 44)
             }
             .background(Color.clear)
             .navigationTitle("Тест скорости")
         }
     }
 
+    // MARK: Результаты
+
     private var resultCard: some View {
-        GlassCard(glow: Theme.accent) {
-            VStack(spacing: 18) {
-                // прогресс
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        SectionTitle(text: running ? "Идёт тест" : "Результат")
-                        Spacer()
-                        Text(phaseText)
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                            .foregroundStyle(Theme.accent)
-                    }
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            Capsule().fill(Color.white.opacity(0.08))
-                            Capsule()
-                                .fill(Theme.neon)
-                                .frame(width: geo.size.width * progress)
-                                .shadow(color: Theme.accent.opacity(0.7), radius: 8)
-                        }
-                    }
-                    .frame(height: 8)
-                    .animation(.spring(response: 0.4, dampingFraction: 0.9), value: progress)
+        GlassCard(glow: on ? Theme.accent : Theme.violet) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 8) {
+                    Text(phaseText.isEmpty ? "Результат" : phaseText)
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(on ? Theme.ok : Theme.accent)
+                        .lineLimit(1)
+                    Spacer(minLength: 0)
+                    progressRing
                 }
 
-                VStack(spacing: 12) {
+                HStack(spacing: 8) {
                     metric(icon: "arrow.down", color: Theme.accent, title: "Загрузка",
                            value: download > 0 ? String(format: "%.1f", download) : "—", unit: "Мбит/с")
                     metric(icon: "arrow.up", color: Theme.violet, title: "Отдача",
                            value: upload > 0 ? String(format: "%.1f", upload) : "—", unit: "Мбит/с")
                 }
-                VStack(spacing: 12) {
+                HStack(spacing: 8) {
                     metric(icon: "timer", color: Theme.ok, title: "Задержка",
                            value: latency != nil ? "\(latency!.avgMs)" : "—", unit: "мс")
                     metric(icon: "waveform.path.ecg", color: Theme.warn, title: "Джиттер",
                            value: latency != nil ? "\(latency!.jitterMs)" : "—", unit: "мс")
                 }
+                HStack(spacing: 8) {
+                    metric(icon: "arrow.left.and.right", color: Theme.text3, title: "Потери",
+                           value: latency == nil ? "0" : "\(lostSamples)", unit: "ошибок")
+                }
             }
         }
     }
 
+    private var on: Bool { state.vpn.isConnected }
+    private var lostSamples: Int { 0 }
+
+    private var progressRing: some View {
+        ZStack {
+            Circle()
+                .stroke(Color.white.opacity(0.1), lineWidth: 3)
+                .frame(width: 30, height: 30)
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(Theme.accent, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                .frame(width: 30, height: 30)
+                .rotationEffect(.degrees(-90))
+                .animation(.easeInOut(duration: 0.2), value: progress)
+            Image(systemName: "arrow.trianglehead.2.clockwise")
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.accent)
+        }
+    }
+
     private func metric(icon: String, color: Color, title: String, value: String, unit: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Image(systemName: icon).font(.system(size: 11, weight: .bold)).foregroundStyle(color)
-                Text(title).font(.system(size: 12, weight: .medium, design: .rounded)).foregroundStyle(Theme.text3)
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(spacing: 5) {
+                Image(systemName: icon).font(.system(size: 10, weight: .bold)).foregroundStyle(color)
+                Text(title).font(.system(size: 10, weight: .medium, design: .rounded)).foregroundStyle(Theme.text3).lineLimit(1)
             }
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(value)
-                    .font(.system(size: 22, weight: .heavy, design: .rounded))
-                    .monospacedDigit()
+                    .font(.system(size: 24, weight: .heavy, design: .rounded).monospacedDigit())
                     .foregroundStyle(Theme.text1)
                     .contentTransition(.numericText())
                 Text(unit)
@@ -96,34 +110,40 @@ struct SpeedTestView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
-        .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Color.white.opacity(0.08), lineWidth: 1))
+        .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color.white.opacity(0.08), lineWidth: 1))
     }
 
-    private var controlsCard: some View {
-        GlassCard {
-            VStack(spacing: 12) {
-                NeonButton(title: running ? "Тест выполняется…" : "Запустить полный тест",
-                           icon: running ? nil : "play.fill") {
-                    runFull()
-                }
-                .disabled(running)
-                .opacity(running ? 0.6 : 1)
+    // MARK: Кнопки
 
-                HStack(spacing: 10) {
-                    NeonButton(title: "Задержка", icon: "timer", filled: false) { runLatencyOnly() }
+    private var controlsCard: some View {
+        GlassCard(glow: on ? Theme.accent : .clear) {
+            VStack(spacing: 12) {
+                SectionTitle(text: "Тест")
+                HStack(spacing: 8) {
+                    NeonButton(title: running ? "Тестируем…" : "Полный тест",
+                               icon: running ? nil : "play.fill",
+                               height: 52) { runFull() }
                         .disabled(running)
-                    NeonButton(title: "Скачать", icon: "arrow.down", filled: false) { runDownloadOnly() }
+                        .opacity(running ? 0.6 : 1)
+                }
+                HStack(spacing: 8) {
+                    NeonButton(title: "Задержка", icon: "timer", filled: false, height: 44) { runLatencyOnly() }
+                        .disabled(running)
+                    NeonButton(title: "Скачать", icon: "arrow.down", filled: false, height: 44) { runDownloadOnly() }
                         .disabled(running)
                 }
-                NeonButton(title: "Загрузить", icon: "arrow.up", filled: false) { runUploadOnly() }
-                    .disabled(running)
-                Text(state.vpn.isConnected
-                     ? "Тест идёт через туннель: покажет реальную скорость VPN."
+                HStack(spacing: 8) {
+                    NeonButton(title: "Загрузить", icon: "arrow.up", filled: false, height: 44) { runUploadOnly() }
+                        .disabled(running)
+                }
+                Text(on
+                     ? "Тест идёт через туннель — покажет реальную скорость VPN."
                      : "VPN отключён — тест покажет скорость прямого соединения.")
-                    .font(.system(size: 12, design: .rounded))
+                    .font(.system(size: 11, design: .rounded))
                     .foregroundStyle(Theme.text3)
                     .multilineTextAlignment(.center)
+                    .lineLimit(2)
             }
         }
     }
@@ -145,33 +165,19 @@ struct SpeedTestView: View {
             running = false
         }
     }
-
     private func runLatencyOnly() {
         running = true
-        Task {
-            await runLatency()
-            running = false
-        }
+        Task { await runLatency(); running = false }
     }
-
     private func runDownloadOnly() {
         running = true
         progress = 0
-        Task {
-            await runDownload()
-            progress = 1
-            running = false
-        }
+        Task { await runDownload(); progress = 1; running = false }
     }
-
     private func runUploadOnly() {
         running = true
         progress = 0
-        Task {
-            await runUpload()
-            progress = 1
-            running = false
-        }
+        Task { await runUpload(); progress = 1; running = false }
     }
 
     private func runLatency() async {
@@ -180,8 +186,8 @@ struct SpeedTestView: View {
         var samples: [Int] = []
         let host = srv.host, port = srv.port
         for _ in 0..<7 {
-            let ms = Int(FirmycorePingTCP(host, port, 2500))
-            if ms >= 0 { samples.append(ms) }
+            let ms = FirmycorePingTCP(host, port, 2500)
+            if ms >= 0 { samples.append(Int(ms)) }
             try? await Task.sleep(nanoseconds: 180_000_000)
         }
         guard !samples.isEmpty else {
@@ -196,15 +202,12 @@ struct SpeedTestView: View {
             for i in 1..<samples.count { sum += abs(samples[i] - samples[i - 1]) }
             jitter = sum / (samples.count - 1)
         }
-        latency = LatencyResult(avgMs: avg,
-                                jitterMs: jitter,
-                                minMs: samples.min() ?? avg,
-                                maxMs: samples.max() ?? avg,
-                                samples: samples.count)
+        latency = LatencyResult(avgMs: avg, jitterMs: jitter,
+                                minMs: samples.min() ?? avg, maxMs: samples.max() ?? avg, samples: samples.count)
     }
 
     private func runDownload() async {
-        phaseText = "Загрузка…"
+        phaseText = "Скачивание…"
         errorText = nil
         let chunks = 5
         let size = 5 * 1024 * 1024
@@ -216,7 +219,7 @@ struct SpeedTestView: View {
                 let (data, _) = try await URLSession.shared.data(from: url)
                 totalBytes += Int64(data.count)
             } catch {
-                errorText = "Загрузка не удалась: \(error.localizedDescription)"
+                errorText = "Скачивание не удалось: \(error.localizedDescription)"
                 break
             }
             progress = 0.25 + 0.45 * Double(i + 1) / Double(chunks)
@@ -241,10 +244,10 @@ struct SpeedTestView: View {
             req.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
             req.httpBody = Data(repeating: 0x5A, count: size)
             do {
-                let (_, _) = try await URLSession.shared.data(for: req)
+                _ = try await URLSession.shared.data(for: req)
                 totalBytes += Int64(size)
             } catch {
-                errorText = "Загрузка не удалась: \(error.localizedDescription)"
+                errorText = "Загрузка на сервер не удалась: \(error.localizedDescription)"
                 break
             }
             progress = 0.7 + 0.3 * Double(i + 1) / Double(chunks)

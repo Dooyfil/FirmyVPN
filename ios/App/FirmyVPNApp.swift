@@ -35,7 +35,7 @@ struct RootView: View {
             AuroraBackground()
             TabView(selection: $tab) {
                 HomeView(onOpenServers: { tab = 1 }, onOpenSpeed: { tab = 3 })
-                    .tabItem { Label("Главная", systemImage: "shield.lefthalf.filled") }
+                    .tabItem { Label("Подключение", systemImage: "shield.lefthalf.filled") }
                     .tag(0)
                 ServersView()
                     .tabItem { Label("Серверы", systemImage: "server.rack") }
@@ -44,7 +44,7 @@ struct RootView: View {
                     .tabItem { Label("Импорт", systemImage: "square.and.arrow.down") }
                     .tag(2)
                 SpeedTestView()
-                    .tabItem { Label("Тест", systemImage: "gauge.with.dots.needle.67percent") }
+                    .tabItem { Label("Тест скорости", systemImage: "gauge.with.dots.needle.67percent") }
                     .tag(3)
                 SettingsView()
                     .tabItem { Label("Настройки", systemImage: "slider.horizontal.3") }

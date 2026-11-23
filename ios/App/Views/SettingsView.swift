@@ -8,7 +8,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 18) {
+                VStack(spacing: 14) {
                     connectCard
                     scaleCard
                     dnsCard
@@ -18,10 +18,17 @@ struct SettingsView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
-                .padding(.bottom, 40)
+                .padding(.bottom, 44)
             }
             .background(Color.clear)
             .navigationTitle("Настройки")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(state.settings.blockAds ? "Обновить" : "Режимы") { state.settings.blockAds = !state.settings.blockAds; state.save() }
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Theme.accent)
+                }
+            }
             .alert("Сбросить настройки?", isPresented: $showReset) {
                 Button("Сброс", role: .destructive) {
                     state.settings = AppSettings()
@@ -36,11 +43,25 @@ struct SettingsView: View {
         .onAppear {
             groupNote = AppGroup.isShared
                 ? "Общая папка: доступна"
-                : "Общая папка недоступна — настройки передаются через профиль VPN"
+                : "Настройки передаются через профиль VPN"
         }
     }
 
-    private func toggle(_ title: String, _ icon: String, _ key: WritableKeyPath<AppSettings, Bool>, footer: String? = nil) -> some View {
+    // MARK: Подключение
+
+    private var connectCard: some View {
+        settingsCard("Подключение") {
+            toggle("Kill switch — ничего мимо VPN", "lock.shield", \.killSwitch)
+            Divider().overlay(Color.white.opacity(0.08))
+            toggle("Блокировать локальную сеть (LAN)", "wifi.slash", \.blockLan)
+            Divider().overlay(Color.white.opacity(0.08))
+            toggle("Блокировать весь UDP", "network.slash", \.udpBlock)
+            Divider().overlay(Color.white.opacity(0.08))
+            toggle("Автоподключение при запуске", "power", \.autoConnect)
+        }
+    }
+
+    private func toggle(_ title: String, _ icon: String, _ key: WritableKeyPath<AppSettings, Bool>) -> some View {
         Toggle(isOn: Binding(get: { state.settings[keyPath: key] },
                              set: { state.settings[keyPath: key] = $0; state.save() })) {
             HStack(spacing: 12) {
@@ -48,7 +69,7 @@ struct SettingsView: View {
                     .foregroundStyle(Theme.accent)
                     .frame(width: 28)
                 Text(title)
-                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(Theme.text2)
                     .lineLimit(1)
                     .truncationMode(.tail)
@@ -62,26 +83,57 @@ struct SettingsView: View {
         }
     }
 
-    private var connectCard: some View {
-        settingsCard("Подключение") {
-            toggle("Kill switch (ничего мимо VPN)", "lock.shield", \.killSwitch,
-                   footer: "iOS: includeAllNetworks")
+    // MARK: Масштаб
+
+    private var scaleCard: some View {
+        settingsCard("Масштаб интерфейса") {
+            scaleRow(icon: "arrow.left.and.right", title: "Ширина",
+                     value: state.settings.uiScaleX,
+                     binding: Binding(get: { state.settings.uiScaleX },
+                                      set: { state.settings.uiScaleX = $0; state.save() }))
             Divider().overlay(Color.white.opacity(0.08))
-            toggle("Блокировать локальную сеть", "wifi.slash", \.blockLan)
-            Divider().overlay(Color.white.opacity(0.08))
-            toggle("Блокировать торренты", "arrow.triangle.branch", \.blockBt)
-            Divider().overlay(Color.white.opacity(0.08))
-            toggle("Блокировать весь UDP", "network.slash", \.udpBlock)
-            Divider().overlay(Color.white.opacity(0.08))
-            toggle("Жёсткая маршрутизация", "route", \.strictRoute)
-            Divider().overlay(Color.white.opacity(0.08))
-            toggle("Отключить IPv6", "globe.badge.chevron.backward", \.disableIPv6)
-            Divider().overlay(Color.white.opacity(0.08))
-            toggle("Автоподключение при запуске", "power", \.autoConnect)
-            Divider().overlay(Color.white.opacity(0.08))
-            toggle("Выбирать самый быстрый сервер", "bolt.fill", \.fastestServer)
+            scaleRow(icon: "arrow.up.and.down", title: "Высота",
+                     value: state.settings.uiScaleY,
+                     binding: Binding(get: { state.settings.uiScaleY },
+                                      set: { state.settings.uiScaleY = $0; state.save() }))
         }
     }
+
+    private func scaleRow(icon: String, title: String, value: Double, binding: Binding<Double>) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .foregroundStyle(Theme.accent)
+                .frame(width: 28)
+            Text(title)
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundStyle(Theme.text2)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text(String(format: "%.2f", value))
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(Theme.accent)
+                .monospacedDigit()
+            Button {
+                binding.wrappedValue = min(max(binding.wrappedValue - 0.05, 0.6), 1.4)
+                state.save()
+            } label: {
+                Image(systemName: "minus.circle.fill")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.accent)
+            }
+            Button {
+                binding.wrappedValue = min(max(binding.wrappedValue + 0.05, 0.6), 1.4)
+                state.save()
+            } label: {
+                Image(systemName: "plus.circle.fill")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.accent)
+            }
+        }
+        .padding(.vertical, 6)
+    }
+
+    // MARK: DNS
 
     private var dnsCard: some View {
         settingsCard("DNS") {
@@ -98,6 +150,7 @@ struct SettingsView: View {
                     Text("Прямой (AliDNS)").tag("direct")
                 }
                 .pickerStyle(.menu)
+                .frame(maxWidth: .infinity)
                 .tint(Theme.accent)
             }
             Divider().overlay(Color.white.opacity(0.08))
@@ -109,45 +162,52 @@ struct SettingsView: View {
                     get: { state.settings.customDNS },
                     set: { state.settings.customDNS = $0; state.save() }
                 ))
-                .font(.system(size: 14, design: .rounded))
+                .font(.system(size: 13, design: .rounded))
                 .foregroundStyle(Theme.text1)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
+                .lineLimit(1)
+                .truncationMode(.tail)
             }
             .padding(.vertical, 4)
         }
     }
 
+    // MARK: Фильтры
+
     private var filterCard: some View {
         settingsCard("Фильтры и правила") {
             toggle("Блокировать рекламу и трекеры", "hand.raised.slash", \.blockAds)
             Divider().overlay(Color.white.opacity(0.08))
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 12) {
-                    Image(systemName: "line.3.horizontal.decrease")
-                        .foregroundStyle(Theme.pink)
-                        .frame(width: 28)
-                    Text("Мимо VPN (домены и подсети)")
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
-                        .foregroundStyle(Theme.text2)
-                }
-                TextEditor(text: Binding(
-                    get: { state.settings.bypassDomains },
-                    set: { state.settings.bypassDomains = $0; state.save() }
-                ))
-                .font(.system(size: 14, design: .rounded))
-                .foregroundStyle(Theme.text1)
-                .scrollContentBackground(.hidden)
-                .frame(height: 84)
-                .padding(10)
-                .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                Text("по одному в строке: example.com, 10.0.0.0/8")
-                    .font(.system(size: 11, design: .rounded))
-                    .foregroundStyle(Theme.text3)
+            HStack(spacing: 12) {
+                Image(systemName: "line.3.horizontal.decrease")
+                    .foregroundStyle(Theme.pink)
+                    .frame(width: 28)
+                Text("Мимо VPN (домены и подсети)")
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundStyle(Theme.text2)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.vertical, 4)
+            TextEditor(text: Binding(
+                get: { state.settings.bypassDomains },
+                set: { state.settings.bypassDomains = $0; state.save() }
+            ))
+            .font(.system(size: 13, design: .rounded))
+            .foregroundStyle(Theme.text1)
+            .scrollContentBackground(.hidden)
+            .frame(height: 84)
+            .padding(10)
+            .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .lineLimit(4)
+            Text("По одному домену или подсети в строке")
+                .font(.system(size: 10, design: .rounded))
+                .foregroundStyle(Theme.text3)
+                .lineLimit(1)
         }
     }
+
+    // MARK: Система
 
     private var systemCard: some View {
         settingsCard("Система") {
@@ -156,9 +216,10 @@ struct SettingsView: View {
                     .foregroundStyle(Theme.accent)
                     .frame(width: 28)
                 Text("Уровень логов")
-                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(Theme.text2)
-                Spacer()
+                    .lineLimit(1)
+                Spacer(minLength: 6)
                 Picker("", selection: Binding(get: { state.settings.logLevel },
                                               set: { state.settings.logLevel = $0; state.save() })) {
                     Text("trace").tag("trace")
@@ -167,7 +228,7 @@ struct SettingsView: View {
                     Text("warn").tag("warn")
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 190)
+                .frame(width: 170)
                 .tint(Theme.accent)
             }
             .padding(.vertical, 4)
@@ -177,17 +238,18 @@ struct SettingsView: View {
                     .foregroundStyle(Theme.accent)
                     .frame(width: 28)
                 Text("MTU туннеля")
-                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(Theme.text2)
-                Spacer()
+                    .lineLimit(1)
+                Spacer(minLength: 6)
                 Stepper(value: Binding(get: { state.settings.mtu },
                                        set: { state.settings.mtu = $0; state.save() }),
                         in: 1280...9000, step: 100) {
                     Text("\(state.settings.mtu)")
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(Theme.accent)
-                        .frame(width: 56)
+                        .frame(width: 52)
                 }
                 .fixedSize()
             }
@@ -195,46 +257,7 @@ struct SettingsView: View {
         }
     }
 
-    private var scaleCard: some View {
-        settingsCard("Масштаб интерфейса") {
-            scaleRow(icon: "arrow.left.and.right", title: "Ширина", keyPath: \.uiScaleX)
-            Divider().overlay(Color.white.opacity(0.08))
-            scaleRow(icon: "arrow.up.and.down", title: "Высота", keyPath: \.uiScaleY)
-        }
-    }
-
-    private func scaleRow(icon: String, title: String, keyPath: WritableKeyPath<AppSettings, Double>) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-                .foregroundStyle(Theme.accent)
-                .frame(width: 28)
-            Text(title)
-                .font(.system(size: 15, weight: .medium, design: .rounded))
-                .foregroundStyle(Theme.text2)
-                .lineLimit(1)
-            Spacer(minLength: 8)
-            Text(String(format: "%.2f", state.settings[keyPath: keyPath]))
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(Theme.accent)
-            Button {
-                state.settings[keyPath: keyPath] = min(max(state.settings[keyPath: keyPath] - 0.05, 0.6), 1.4)
-                state.save()
-            } label: {
-                Image(systemName: "minus.circle.fill")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
-            }
-            Button {
-                state.settings[keyPath: keyPath] = min(max(state.settings[keyPath: keyPath] + 0.05, 0.6), 1.4)
-                state.save()
-            } label: {
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
-            }
-        }
-        .padding(.vertical, 4)
-    }
+    // MARK: О приложении
 
     private var aboutCard: some View {
         settingsCard("О приложении") {
@@ -248,6 +271,8 @@ struct SettingsView: View {
                 Text(note)
                     .font(.system(size: 12, design: .rounded))
                     .foregroundStyle(Theme.warn)
+                    .lineLimit(2)
+                    .truncationMode(.tail)
             }
             Divider().overlay(Color.white.opacity(0.08))
             Button {
@@ -256,7 +281,7 @@ struct SettingsView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "trash").foregroundStyle(Theme.err).frame(width: 28)
                     Text("Очистить журнал")
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
                         .foregroundStyle(Theme.err)
                     Spacer()
                 }
@@ -268,7 +293,7 @@ struct SettingsView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "arrow.counterclockwise").foregroundStyle(Theme.warn).frame(width: 28)
                     Text("Сбросить настройки")
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
                         .foregroundStyle(Theme.warn)
                     Spacer()
                 }
@@ -280,12 +305,14 @@ struct SettingsView: View {
         HStack(spacing: 12) {
             Image(systemName: icon).foregroundStyle(Theme.accent).frame(width: 28)
             Text(title)
-                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .font(.system(size: 14, weight: .medium, design: .rounded))
                 .foregroundStyle(Theme.text2)
-            Spacer()
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
             Text(value)
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
                 .foregroundStyle(Theme.text3)
+                .lineLimit(1)
         }
         .padding(.vertical, 4)
     }

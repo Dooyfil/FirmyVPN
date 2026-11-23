@@ -1,7 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Импорт ровно в два шага: «Подписка» или «Файл» — как в PC-версии.
+/// Импорт: две вкладки — «Подписка» или «Файл». Всё вписывается в экран.
 struct ImportView: View {
     @EnvironmentObject var state: AppState
 
@@ -15,13 +15,13 @@ struct ImportView: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 18) {
+                VStack(spacing: 12) {
                     Picker("", selection: $tab) {
                         Text("Подписка").tag(0)
                         Text("Файл").tag(1)
                     }
                     .pickerStyle(.segmented)
-                    .padding(.horizontal, 4)
+                    .padding(.horizontal, 2)
 
                     if tab == 0 { subscriptionCard } else { fileCard }
 
@@ -33,7 +33,7 @@ struct ImportView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
-                .padding(.bottom, 40)
+                .padding(.bottom, 44)
             }
             .background(Color.clear)
             .navigationTitle("Импорт")
@@ -62,23 +62,12 @@ struct ImportView: View {
 
     private var subscriptionCard: some View {
         GlassCard(glow: Theme.violet) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 8) {
-                    Image(systemName: "link")
-                        .foregroundStyle(Theme.violet)
-                        .frame(width: 20, height: 20)
-                        .background(Theme.violet.opacity(0.15), in: Circle())
-                    Text("Ссылка подписки")
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Theme.text1)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                }
-                inputField(icon: "globe", placeholder: "https://…", text: $subURL)
-                NeonButton(title: busy ? "Загрузка…" : "Добавить",
-                           icon: busy ? nil : "arrow.down.circle.fill",
+            VStack(alignment: .leading, spacing: 10) {
+                inputField(icon: "link", placeholder: "Ссылка подписки — https://… или base64", text: $subURL)
+                NeonButton(title: busy ? "Загрузка…" : "Добавить подписку",
                            color: Theme.violet,
-                           fontSize: 10) {
+                           height: 42,
+                           fontSize: 12) {
                     Task {
                         busy = true
                         banner = nil
@@ -91,7 +80,7 @@ struct ImportView: View {
                 .disabled(busy || subURL.trimmingCharacters(in: .whitespaces).isEmpty)
                 .opacity(subURL.trimmingCharacters(in: .whitespaces).isEmpty ? 0.55 : 1)
             }
-            .padding(16)
+            .padding(14)
         }
     }
 
@@ -99,27 +88,30 @@ struct ImportView: View {
 
     private var fileCard: some View {
         GlassCard(glow: Theme.accent) {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 10) {
                     Image(systemName: "doc.plaintext")
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(Theme.accent)
-                        .frame(width: 20, height: 20)
-                        .background(Theme.accent.opacity(0.15), in: Circle())
+                        .frame(width: 34, height: 34)
+                        .background(Theme.accent.opacity(0.16), in: Circle())
                     Text("Файл с ключами")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.text1)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .frame(maxWidth: .infinity)
                 }
-                Text("Сохраните файл из Telegram и выберите его.")
+                Text("txt · json · yaml (Clash) — сохраните файл из Telegram и выберите его здесь")
                     .font(.system(size: 11, design: .rounded))
-                    .foregroundStyle(Theme.text2)
-                    .lineLimit(1)
+                    .foregroundStyle(Theme.text3)
+                    .lineLimit(2)
                     .truncationMode(.tail)
-                    .frame(maxWidth: .infinity, alignment: .leading)
                 NeonButton(title: "Выбрать файл", icon: "folder.fill", color: Theme.accent) {
                     showFile = true
                 }
             }
-            .padding(16)
+            .padding(14)
         }
     }
 
@@ -129,14 +121,16 @@ struct ImportView: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .foregroundStyle(Theme.text3)
-                .frame(width: 20)
+                .frame(width: 18)
             TextField(placeholder, text: text)
-                .font(.system(size: 13, design: .rounded))
+                .font(.system(size: 12, design: .rounded))
                 .foregroundStyle(Theme.text1)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
+                .lineLimit(1)
+                .truncationMode(.tail)
         }
-        .padding(10)
+        .padding(9)
         .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color.white.opacity(0.1), lineWidth: 1))
     }
@@ -145,14 +139,14 @@ struct ImportView: View {
         HStack(spacing: 8) {
             Image(systemName: text.contains("Ошибка") || text.contains("не") || text.contains("Ничего") ? "exclamationmark.triangle" : "checkmark.circle")
                 .foregroundStyle(Theme.accent)
+                .font(.system(size: 14))
             Text(text)
                 .font(.system(size: 13, weight: .medium, design: .rounded))
                 .foregroundStyle(Theme.text2)
                 .lineLimit(2)
                 .truncationMode(.tail)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
+        .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Theme.accent.opacity(0.3), lineWidth: 1))
@@ -161,34 +155,30 @@ struct ImportView: View {
 
     private var infoCard: some View {
         GlassCard {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 8) {
                 SectionTitle(text: "Поддерживаемые форматы")
-                FlowTags(tags: ["vless://", "vmess://", "trojan://", "ss://",
-                                "hysteria2://", "tuic://", "anytls://",
-                                "base64-подписка", "sing-box JSON", "Clash YAML"])
-            }
-        }
-    }
-}
-
-/// Простая обёртка строк тегов.
-struct FlowTags: View {
-    let tags: [String]
-    private let columns = [GridItem(.adaptive(minimum: 70), spacing: 8)]
-
-    var body: some View {
-        LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
-            ForEach(tags, id: \.self) { t in
-                Text(t)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(Theme.text2)
-                    .lineLimit(1)
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: 8)],
+                          alignment: .leading, spacing: 8) {
+                    ForEach(tags, id: \.self) { t in
+                        Text(t)
+                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                            .foregroundStyle(Theme.text2)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 5)
+                            .background(Color.white.opacity(0.06), in: Capsule())
+                            .overlay(Capsule().stroke(Color.white.opacity(0.12), lineWidth: 1))
+                    }
+                }
+                Text("vless · vmess · trojan · ss · hysteria2 · tuic · anytls · подписка")
+                    .font(.system(size: 11, design: .rounded))
+                    .foregroundStyle(Theme.text3)
+                    .lineLimit(2)
                     .truncationMode(.tail)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 5)
-                    .background(Color.white.opacity(0.06), in: Capsule())
-                    .overlay(Capsule().stroke(Color.white.opacity(0.1), lineWidth: 1))
             }
         }
     }
+
+    private let tags = ["vless://", "vmess://", "trojan://", "ss://", "hysteria2://", "tuic://", "anytls://", "base64-подписка"]
 }

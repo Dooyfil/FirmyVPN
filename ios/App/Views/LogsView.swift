@@ -9,33 +9,26 @@ struct LogsView: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                LazyVStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 4) {
                     if state.logs.isEmpty {
-                        Text("Журнал пуст — подключитесь, чтобы увидеть записи ядра.")
-                            .font(.system(size: 14, design: .rounded))
-                            .foregroundStyle(Theme.text3)
-                            .padding(.top, 60)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    }
-                    ForEach(Array(state.logs.enumerated()), id: \.offset) { _, line in
-                        HStack(alignment: .top, spacing: 8) {
-                            Text(line.time.replacingOccurrences(of: "T", with: " ").prefix(19))
-                                .font(.system(size: 11, design: .monospaced))
+                        HStack {
+                            Image(systemName: "scroll")
+                                .font(.system(size: 40, weight: .light))
                                 .foregroundStyle(Theme.text3)
-                            Text("[\(line.source)]")
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                .foregroundStyle(color(line.source))
-                            Text(line.text)
-                                .font(.system(size: 12, design: .monospaced))
-                                .foregroundStyle(Theme.text2)
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .textSelection(.enabled)
+                                .padding(.top, 70)
+                            Text("Журнал пуст — подключитесь, чтобы увидеть записи ядра.")
+                                .font(.system(size: 13, design: .rounded))
+                                .foregroundStyle(Theme.text3)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.top, 14)
                         }
                     }
+                    ForEach(Array(state.logs.enumerated()), id: \.offset) { _, line in
+                        logRow(line)
+                    }
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 18)
                 .padding(.vertical, 10)
             }
             .background(Color.clear)
@@ -44,13 +37,14 @@ struct LogsView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Закрыть") { dismiss() }
-                        .foregroundStyle(Theme.text2)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Theme.accent)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        state.clearLogs()
-                    } label: {
-                        Image(systemName: "trash").foregroundStyle(Theme.err)
+                    Button { state.clearLogs() } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 14))
+                            .foregroundStyle(Theme.err)
                     }
                 }
             }
@@ -62,6 +56,30 @@ struct LogsView: View {
             }
         }
         .onDisappear { timer?.invalidate() }
+    }
+
+    private func logRow(_ line: (time: String, source: String, text: String)) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Text(line.time.replacingOccurrences(of: "T", with: " ").prefix(19))
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundStyle(Theme.text3)
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .frame(width: 62, alignment: .trailing)
+            Text("[\(line.source)]")
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .foregroundStyle(color(line.source))
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .frame(width: 40, alignment: .leading)
+            Text(line.text)
+                .font(.system(size: 12, design: .monospaced))
+                .foregroundStyle(Theme.text2)
+                .textSelection(.enabled)
+                .lineLimit(2)
+                .truncationMode(.tail)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
     private func color(_ source: String) -> Color {

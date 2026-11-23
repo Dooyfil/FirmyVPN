@@ -9,12 +9,12 @@ struct ServersView: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 14) {
+                VStack(spacing: 12) {
                     if state.servers.isEmpty { empty } else { list }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
-                .padding(.bottom, 40)
+                .padding(.bottom, 44)
             }
             .background(Color.clear)
             .navigationTitle("Серверы")
@@ -31,15 +31,17 @@ struct ServersView: View {
                             ProgressView().tint(Theme.accent)
                         } else {
                             Image(systemName: "bolt.horizontal.circle")
+                                .font(.system(size: 16, weight: .medium))
                                 .foregroundStyle(Theme.accent)
                         }
                     }
                     .disabled(pinging || state.servers.isEmpty)
                 }
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     if !state.servers.isEmpty {
                         Button(editMode ? "Готово" : "Изменить") { editMode.toggle() }
-                            .foregroundStyle(Theme.text2)
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .foregroundStyle(Theme.accent)
                     }
                 }
             }
@@ -47,21 +49,21 @@ struct ServersView: View {
     }
 
     private var empty: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             Image(systemName: "server.rack")
-                .font(.system(size: 46, weight: .light))
+                .font(.system(size: 40, weight: .light))
                 .foregroundStyle(Theme.text3)
-                .padding(.top, 80)
+                .padding(.top, 60)
             Text("Пока нет серверов")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundStyle(Theme.text1)
-            Text("Вставьте ссылку или файл из Telegram-бота во вкладке «Импорт»")
-                .font(.system(size: 14, design: .rounded))
+                .lineLimit(1)
+            Text("Импортируйте ключи во вкладке Импорт")
+                .font(.system(size: 13, design: .rounded))
                 .foregroundStyle(Theme.text3)
                 .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .lineLimit(3)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.horizontal, 40)
         }
     }
 
@@ -86,53 +88,58 @@ struct ServersView: View {
     private func row(_ s: Server, index: Int) -> some View {
         let selected = s.id == state.selectedServer?.id
         return GlassCard(glow: selected ? Theme.accent : .clear) {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 ZStack {
                     Circle()
-                        .fill(selected ? Theme.neon : LinearGradient(colors: [Color.white.opacity(0.14)], startPoint: .top, endPoint: .bottom))
-                        .frame(width: 44, height: 44)
-                    Text(glyph(s))
-                        .font(.system(size: 13, weight: .heavy, design: .rounded))
-                        .foregroundStyle(selected ? .white : Theme.text2)
+                        .fill(selected ? Theme.neon : Color.white.opacity(0.14))
+                        .frame(width: 42, height: 42)
+                    Text(glyph(s.protocolName))
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(selected ? .white : Theme.accent)
+                        .frame(width: 42, height: 42)
+                        .lineLimit(1)
                 }
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(s.title)
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundStyle(Theme.text1)
                         .lineLimit(1)
                         .truncationMode(.tail)
-                    HStack(spacing: 6) {
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    HStack(spacing: 6, alignment: .firstTextBaseline) {
                         Text(s.protocolShort)
-                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .font(.system(size: 9, weight: .bold, design: .rounded))
                             .foregroundStyle(Theme.violet)
                             .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Theme.violet.opacity(0.15), in: Capsule())
+                            .padding(.vertical, 3)
+                            .background(Theme.violet.opacity(0.18), in: Capsule())
                         Text("\(s.host):\(s.port)")
                             .font(.system(size: 11, design: .rounded))
                             .foregroundStyle(Theme.text3)
                             .lineLimit(1)
                             .truncationMode(.tail)
+                            .frame(maxWidth: .infinity)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                Spacer(minLength: 8)
+                Spacer(minLength: 4)
                 pingBadge(s.ping)
                 if editMode {
                     Image(systemName: "trash")
+                        .font(.system(size: 15))
                         .foregroundStyle(Theme.err)
                         .onTapGesture {
-                            state.servers.removeAll { $0.id == s.id }
-                            if state.settings.selectedServer == s.id {
-                                state.settings.selectedServer = state.servers.first?.id ?? ""
+                            withAnimation(.spring(response: 0.25, dampingFraction: 0.75)) {
+                                state.servers.removeAll { $0.id == s.id }
+                                if state.settings.selectedServer == s.id {
+                                    state.settings.selectedServer = state.servers.first?.id ?? ""
+                                }
                             }
                             state.save()
                         }
-                } else if selected && state.vpn.isConnected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(Theme.ok)
                 }
             }
+            .contentShape(Rectangle())
         }
         .contentShape(Rectangle())
         .onTapGesture {
@@ -148,17 +155,18 @@ struct ServersView: View {
 
     private func pingBadge(_ p: Int) -> some View {
         let color: Color = p < 0 ? Theme.text3 : (p < 120 ? Theme.ok : (p < 300 ? Theme.warn : Theme.err))
-        return Text(p < 0 ? "—" : "\(p)")
-            .font(.system(size: 13, weight: .bold, design: .rounded))
+        return Text(p < 0 ? "—" : "\(p) мс")
+            .font(.system(size: 12, weight: .bold, design: .rounded))
             .foregroundStyle(color)
-            .frame(width: 54)
-            .padding(.vertical, 7)
-            .background(color.opacity(0.12), in: Capsule())
-            .overlay(Capsule().stroke(color.opacity(0.3), lineWidth: 1))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .background(color.opacity(0.16), in: Capsule())
+            .overlay(Capsule().stroke(color.opacity(0.5), lineWidth: 1))
+            .frame(width: 62, alignment: .center)
     }
 
-    private func glyph(_ s: Server) -> String {
-        switch s.protocolName {
+    private func glyph(_ p: String) -> String {
+        switch p {
         case "vless": return "V"
         case "vmess": return "VM"
         case "trojan": return "TR"
@@ -166,7 +174,7 @@ struct ServersView: View {
         case "hysteria2": return "H2"
         case "tuic": return "TU"
         case "anytls": return "AT"
-        default: return String(s.protocolName.prefix(2)).uppercased()
+        default: return String(p.prefix(2)).uppercased()
         }
     }
 }
