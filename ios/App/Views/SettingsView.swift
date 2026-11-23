@@ -113,7 +113,7 @@ struct SettingsView: View {
     }
 
     private func scaleAxis(title: String, value: Double, minus: @escaping () -> Void, plus: @escaping () -> Void) -> some View {
-        HStack(spacing: 8, alignment: .firstTextBaseline) {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(title)
                 .font(.system(size: 12, weight: .medium, design: .rounded))
                 .foregroundStyle(Theme.text2)
