@@ -111,7 +111,7 @@ struct ServersView: View {
                         .lineLimit(1)
                         .truncationMode(.tail)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    HStack(spacing: 6, alignment: .firstTextBaseline) {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text(s.protocolShort)
                             .font(.system(size: 9, weight: .bold, design: .rounded))
                             .foregroundStyle(Theme.violet)
