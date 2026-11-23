@@ -58,6 +58,8 @@ struct RootView: View {
                          anchor: .topLeading)
             .animation(.spring(response: 0.35, dampingFraction: 0.85), value: state.settings.uiScaleX)
             .animation(.spring(response: 0.35, dampingFraction: 0.85), value: state.settings.uiScaleY)
+            // Ограничиваем доступность: «Крупный текст» не растягивает всё приложение
+            .dynamicTypeSize(.xxxLarge)
         }
         .onChange(of: scenePhase) { p in
             guard p == .active else { return }
