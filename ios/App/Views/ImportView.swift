@@ -66,8 +66,8 @@ struct ImportView: View {
                 inputField(icon: "link", placeholder: "Ссылка подписки — https://… или base64", text: $subURL)
                 NeonButton(title: busy ? "Загрузка…" : "Добавить подписку",
                            color: Theme.violet,
-                           height: 42,
-                           fontSize: 12) {
+                           fontSize: 12,
+                           height: 42) {
                     Task {
                         busy = true
                         banner = nil

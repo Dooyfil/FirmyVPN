@@ -54,7 +54,7 @@ struct HomeView: View {
 
     private var statusCard: some View {
         VStack(spacing: 12) {
-            HStack(spacing: 8, alignment: .center) {
+            HStack(alignment: .center, spacing: 8) {
                 Text(state.phase.label)
                     .font(.system(size: 25, weight: .bold, design: .rounded))
                     .foregroundStyle(on ? Theme.ok : Theme.text1)

@@ -61,7 +61,6 @@ struct AuroraBackground: View {
                         .frame(width: w, height: w)
                         .opacity(twinkle ? 0.25 + 0.35 * sin(1.5 + phase) : 0.08)
                         .position(x: x, y: y)
-                        .animation(.easeInOut(duration: 0.9 + Double(i % 9) * 0.3).repeatForever(autoreverses: true, delay: Double(i) * 0.07), value: twinkle)
                 }
             }
         }

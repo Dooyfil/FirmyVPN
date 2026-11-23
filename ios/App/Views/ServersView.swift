@@ -91,13 +91,18 @@ struct ServersView: View {
             HStack(spacing: 12) {
                 ZStack {
                     Circle()
-                        .fill(selected ? Theme.neon : Color.white.opacity(0.14))
+                        .fill(selected ? Theme.accent : Color.white.opacity(0.14))
                         .frame(width: 42, height: 42)
                     Text(glyph(s.protocolName))
                         .font(.system(size: 14, weight: .bold, design: .rounded))
                         .foregroundStyle(selected ? .white : Theme.accent)
                         .frame(width: 42, height: 42)
                         .lineLimit(1)
+                }
+                if !selected {
+                    Circle()
+                        .stroke(Theme.accent.opacity(0.25), lineWidth: 1.2)
+                        .frame(width: 42, height: 42)
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     Text(s.title)
