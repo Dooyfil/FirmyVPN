@@ -56,6 +56,8 @@ struct RootView: View {
             .scaleEffect(x: CGFloat(state.settings.uiScaleX),
                          y: CGFloat(state.settings.uiScaleY),
                          anchor: .topLeading)
+            // «Длина» — дополнительный вертикальный отступ содержимого
+            .padding(.vertical, max(0, (state.settings.uiScaleZ - 1) * 28))
             .animation(.spring(response: 0.35, dampingFraction: 0.85), value: state.settings.uiScaleX)
             .animation(.spring(response: 0.35, dampingFraction: 0.85), value: state.settings.uiScaleY)
             // Ограничиваем доступность: «Крупный текст» не растягивает всё приложение

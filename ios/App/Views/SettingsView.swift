@@ -87,58 +87,56 @@ struct SettingsView: View {
 
     private var scaleCard: some View {
         settingsCard("Масштаб интерфейса") {
-            HStack(spacing: 16) {
-                scaleAxis(title: "Ширина", value: state.settings.uiScaleX,
-                          minus: {
-                              state.settings.uiScaleX = min(max(state.settings.uiScaleX - 0.05, 0.6), 1.4)
-                              state.save()
-                          },
-                          plus: {
-                              state.settings.uiScaleX = min(max(state.settings.uiScaleX + 0.05, 0.6), 1.4)
-                              state.save()
-                          })
-                scaleAxis(title: "Высота", value: state.settings.uiScaleY,
-                          minus: {
-                              state.settings.uiScaleY = min(max(state.settings.uiScaleY - 0.05, 0.6), 1.4)
-                              state.save()
-                          },
-                          plus: {
-                              state.settings.uiScaleY = min(max(state.settings.uiScaleY + 0.05, 0.6), 1.4)
-                              state.save()
-                          })
-                Spacer(minLength: 0)
+            VStack(spacing: 8) {
+                scaleRow(title: "Ширина", value: state.settings.uiScaleX) { v in
+                    state.settings.uiScaleX = v
+                }
+                Divider().overlay(Color.white.opacity(0.08))
+                scaleRow(title: "Высота", value: state.settings.uiScaleY) { v in
+                    state.settings.uiScaleY = v
+                }
+                Divider().overlay(Color.white.opacity(0.08))
+                scaleRow(title: "Длина", value: state.settings.uiScaleZ) { v in
+                    state.settings.uiScaleZ = v
+                }
             }
-            .frame(maxWidth: .infinity)
         }
     }
 
-    private func scaleAxis(title: String, value: Double, minus: @escaping () -> Void, plus: @escaping () -> Void) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
+    private let scaleValues: [Double] = (60...140).map { Double($0) / 100.0 }
+
+    private func scaleRow(title: String, value: Double, setter: @escaping (Double) -> Void) -> some View {
+        HStack(spacing: 6, alignment: .firstTextBaseline) {
             Text(title)
-                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .font(.system(size: 11, weight: .medium, design: .rounded))
                 .foregroundStyle(Theme.text2)
                 .lineLimit(1)
             Text(String(format: "%.2f", value))
-                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .font(.system(size: 10, weight: .bold, design: .rounded))
                 .foregroundStyle(Theme.accent)
                 .monospacedDigit()
-            squareBtn(icon: "minus", onPress: minus)
-            squareBtn(icon: "plus", onPress: plus)
+            Button {
+                setter(nextScale(value))
+                state.save()
+            } label: {
+                Image(systemName: "arrow.counterclockwise")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(Theme.accent)
+                    .padding(4)
+            }
+            .buttonStyle(.plain)
+            .frame(width: 28, height: 28)
+            .background(Color.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).stroke(Theme.accent.opacity(0.7), lineWidth: 1))
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 5)
     }
 
-    private func squareBtn(icon: String, onPress: @escaping () -> Void) -> some View {
-        Button(action: onPress) {
-            Image(systemName: icon)
-                .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(Theme.accent)
-                .padding(6)
-        }
-        .buttonStyle(.plain)
-        .frame(width: 28, height: 28)
-        .background(Color.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).stroke(Theme.accent.opacity(0.7), lineWidth: 1))
+    /// Цикл по шагам 0.01 (60…140): позволяет выставить ЛЮБОЕ значение за ~10 нажатий.
+    private func nextScale(_ current: Double) -> Double {
+        let idx = scaleValues.indices.max { scaleValues[$0] <= current + 0.001 } ?? -1
+        guard idx >= 0 else { return scaleValues[0] }
+        return idx + 1 < scaleValues.count ? scaleValues[idx + 1] : scaleValues[0]
     }
 
     // MARK: DNS

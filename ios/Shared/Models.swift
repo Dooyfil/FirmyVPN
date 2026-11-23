@@ -135,16 +135,17 @@ struct AppSettings: Codable {
     var mtu = 9000
     var udpBlock = false
 
-    /// Глобальный масштаб интерфейса: ширина и высота (0.6–1.4).
+    /// Глобальный масштаб интерфейса: ширина, высота, длина (0.6–1.4, шаг 0.01).
     /// Чтобы на маленьком экране всё вписывалось — уменьшите.
     var uiScaleX = 1.0
     var uiScaleY = 1.0
+    var uiScaleZ = 1.0
 
     enum CodingKeys: String, CodingKey {
         case mode, killSwitch, blockLan, blockBt, setSystemProxy, dns, autostart, startMinimized
         case closeToTray, hotkeyEnabled, logLevel, proxyPort, strictRoute, selectedServer, lastMode
         case autoConnect, fastestServer, customDNS, bypassDomains, blockAds, disableIPv6, mtu
-        case udpBlock, uiScaleX, uiScaleY
+        case udpBlock, uiScaleX, uiScaleY, uiScaleZ
     }
 
     init() {}
@@ -176,6 +177,7 @@ struct AppSettings: Codable {
         udpBlock = try c.decodeIfPresent(Bool.self, forKey: .udpBlock) ?? false
         uiScaleX = try c.decodeIfPresent(Double.self, forKey: .uiScaleX) ?? 1.0
         uiScaleY = try c.decodeIfPresent(Double.self, forKey: .uiScaleY) ?? 1.0
+        uiScaleZ = try c.decodeIfPresent(Double.self, forKey: .uiScaleZ) ?? 1.0
     }
 }
 
