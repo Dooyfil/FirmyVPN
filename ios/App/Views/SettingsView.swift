@@ -106,7 +106,7 @@ struct SettingsView: View {
     private let scaleValues: [Double] = (60...140).map { Double($0) / 100.0 }
 
     private func scaleRow(title: String, value: Double, setter: @escaping (Double) -> Void) -> some View {
-        HStack(spacing: 6, alignment: .firstTextBaseline) {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
             Text(title)
                 .font(.system(size: 11, weight: .medium, design: .rounded))
                 .foregroundStyle(Theme.text2)
@@ -132,10 +132,9 @@ struct SettingsView: View {
         .padding(.vertical, 5)
     }
 
-    /// Цикл по шагам 0.01 (60…140): позволяет выставить ЛЮБОЕ значение за ~10 нажатий.
+    /// Цикл по шагам 0.01 (60…140): позволяет выставить ЛЮБОЕ значение за ~80 нажатий.
     private func nextScale(_ current: Double) -> Double {
-        let idx = scaleValues.indices.max { scaleValues[$0] <= current + 0.001 } ?? -1
-        guard idx >= 0 else { return scaleValues[0] }
+        let idx = scaleValues.indices.reversed().first { scaleValues[$0] <= current + 0.001 } ?? 0
         return idx + 1 < scaleValues.count ? scaleValues[idx + 1] : scaleValues[0]
     }
 
