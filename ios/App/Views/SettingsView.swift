@@ -87,50 +87,58 @@ struct SettingsView: View {
 
     private var scaleCard: some View {
         settingsCard("Масштаб интерфейса") {
-            scaleRow(icon: "arrow.left.and.right", title: "Ширина",
-                     value: state.settings.uiScaleX,
-                     binding: Binding(get: { state.settings.uiScaleX },
-                                      set: { state.settings.uiScaleX = $0; state.save() }))
-            Divider().overlay(Color.white.opacity(0.08))
-            scaleRow(icon: "arrow.up.and.down", title: "Высота",
-                     value: state.settings.uiScaleY,
-                     binding: Binding(get: { state.settings.uiScaleY },
-                                      set: { state.settings.uiScaleY = $0; state.save() }))
+            HStack(spacing: 16) {
+                scaleAxis(title: "Ширина", value: state.settings.uiScaleX,
+                          minus: {
+                              state.settings.uiScaleX = min(max(state.settings.uiScaleX - 0.05, 0.6), 1.4)
+                              state.save()
+                          },
+                          plus: {
+                              state.settings.uiScaleX = min(max(state.settings.uiScaleX + 0.05, 0.6), 1.4)
+                              state.save()
+                          })
+                scaleAxis(title: "Высота", value: state.settings.uiScaleY,
+                          minus: {
+                              state.settings.uiScaleY = min(max(state.settings.uiScaleY - 0.05, 0.6), 1.4)
+                              state.save()
+                          },
+                          plus: {
+                              state.settings.uiScaleY = min(max(state.settings.uiScaleY + 0.05, 0.6), 1.4)
+                              state.save()
+                          })
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity)
         }
     }
 
-    private func scaleRow(icon: String, title: String, value: Double, binding: Binding<Double>) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-                .foregroundStyle(Theme.accent)
-                .frame(width: 28)
+    private func scaleAxis(title: String, value: Double, minus: @escaping () -> Void, plus: @escaping () -> Void) -> some View {
+        HStack(spacing: 8, alignment: .firstTextBaseline) {
             Text(title)
-                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .font(.system(size: 12, weight: .medium, design: .rounded))
                 .foregroundStyle(Theme.text2)
                 .lineLimit(1)
-                .frame(maxWidth: .infinity, alignment: .leading)
             Text(String(format: "%.2f", value))
-                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .font(.system(size: 11, weight: .bold, design: .rounded))
                 .foregroundStyle(Theme.accent)
                 .monospacedDigit()
-            Button {
-                binding.wrappedValue = min(max(binding.wrappedValue - 0.05, 0.6), 1.4)
-                state.save()
-            } label: {
-                Image(systemName: "minus.circle.fill")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
-            }
-            Button {
-                binding.wrappedValue = min(max(binding.wrappedValue + 0.05, 0.6), 1.4)
-                state.save()
-            } label: {
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
-            }
+            squareBtn(icon: "minus", onPress: minus)
+            squareBtn(icon: "plus", onPress: plus)
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, 4)
+    }
+
+    private func squareBtn(icon: String, onPress: @escaping () -> Void) -> some View {
+        Button(action: onPress) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(Theme.accent)
+                .padding(6)
+        }
+        .buttonStyle(.plain)
+        .frame(width: 28, height: 28)
+        .background(Color.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).stroke(Theme.accent.opacity(0.7), lineWidth: 1))
     }
 
     // MARK: DNS
