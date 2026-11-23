@@ -10,10 +10,10 @@ struct SettingsView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 18) {
                     connectCard
+                    scaleCard
                     dnsCard
                     filterCard
                     systemCard
-                    scaleCard
                     aboutCard
                 }
                 .padding(.horizontal, 20)
@@ -197,18 +197,14 @@ struct SettingsView: View {
 
     private var scaleCard: some View {
         settingsCard("Масштаб интерфейса") {
-            scaleRow(icon: "arrow.left.and.right", title: "Ширина",
-                     binding: Binding(get: { state.settings.uiScaleX },
-                                      set: { state.settings.uiScaleX = $0; state.save() }))
+            scaleRow(icon: "arrow.left.and.right", title: "Ширина", keyPath: \.uiScaleX)
             Divider().overlay(Color.white.opacity(0.08))
-            scaleRow(icon: "arrow.up.and.down", title: "Высота",
-                     binding: Binding(get: { state.settings.uiScaleY },
-                                      set: { state.settings.uiScaleY = $0; state.save() }))
+            scaleRow(icon: "arrow.up.and.down", title: "Высота", keyPath: \.uiScaleY)
         }
     }
 
-    private func scaleRow(icon: String, title: String, binding: Binding<Double>) -> some View {
-        HStack(spacing: 12) {
+    private func scaleRow(icon: String, title: String, keyPath: WritableKeyPath<AppSettings, Double>) -> some View {
+        HStack(spacing: 8) {
             Image(systemName: icon)
                 .foregroundStyle(Theme.accent)
                 .frame(width: 28)
@@ -216,13 +212,26 @@ struct SettingsView: View {
                 .font(.system(size: 15, weight: .medium, design: .rounded))
                 .foregroundStyle(Theme.text2)
                 .lineLimit(1)
-            Spacer()
-            Text(String(format: "%.2f", binding.wrappedValue))
-                .font(.system(size: 13, weight: .bold, design: .rounded))
+            Spacer(minLength: 8)
+            Text(String(format: "%.2f", state.settings[keyPath: keyPath]))
+                .font(.system(size: 14, weight: .bold, design: .rounded))
                 .foregroundStyle(Theme.accent)
-            Slider(value: binding, in: 0.6...1.4, step: 0.05)
-                .frame(width: 110)
-                .tint(Theme.accent)
+            Button {
+                state.settings[keyPath: keyPath] = min(max(state.settings[keyPath: keyPath] - 0.05, 0.6), 1.4)
+                state.save()
+            } label: {
+                Image(systemName: "minus.circle.fill")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.accent)
+            }
+            Button {
+                state.settings[keyPath: keyPath] = min(max(state.settings[keyPath: keyPath] + 0.05, 0.6), 1.4)
+                state.save()
+            } label: {
+                Image(systemName: "plus.circle.fill")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.accent)
+            }
         }
         .padding(.vertical, 4)
     }
